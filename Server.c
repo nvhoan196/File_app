@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dirent.h>
+#include "hoannv.h"
 
 #define BUFF_SIZE 1024
 
@@ -20,7 +21,8 @@ int main(int argc, char *argv[]){
 
 	socklen_t addr_size;
 
-	char buffer[1024];
+	char buffer[1024],op[3],tmp[255];
+	int len;
 	pid_t childpid;
 
 	if(argc != 2){
@@ -65,13 +67,21 @@ int main(int argc, char *argv[]){
 		if((childpid = fork()) == 0){
 			close(sockfd);
 
-			while(1){
+			while(1){		//process
 				bzero(buffer, sizeof(buffer));
-				recv(newSocket, buffer, BUFF_SIZE, 0);
+				len=recv(newSocket, buffer, BUFF_SIZE, 0);
 				if(buffer[0] == '\0'){
 					printf("Disconnected from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
 					break;
 				}else{
+					op[0]=buffer[0]; op[1]=buffer[1];
+					//so sanh 2 xaU
+
+
+
+
+
+
 					printf("Client %s:%d: %s\n",inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port), buffer);
 					send(newSocket, buffer, strlen(buffer), 0);
 					bzero(buffer, sizeof(buffer));
