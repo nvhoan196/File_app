@@ -1,31 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "client.h"
 
-#define BUFF_SIZE 1024
-
-void menu()
-{
-	printf("\n___________________________\n");
-	printf(" FILE MANAGEMENT PROGRAM \n---------------------------\n");
-	printf("1. Register\n");
-	printf("2. Sign in\n");
-	printf("---------------------------\n");
-	printf("Your choice (1 or 2, other to quit): \n");
-}
-
+int clientSocket, ret;
+struct sockaddr_in serverAddr;
+struct sockaddr_in c_addr;
 
 int main(int argc, char *argv[]){
 
-	int clientSocket, ret;
-	struct sockaddr_in serverAddr;
-	char buffer[1024],tmp[255];
-	int msg_len;
+	char buffer[3];
 	int c;
 
 	if(argc != 3){
@@ -55,43 +36,16 @@ int main(int argc, char *argv[]){
 
 	while(c!=3){
 		menu();
+		fflush(stdin);
 		memset(buffer,'\0',(strlen(buffer)+1));
-		scanf("%s",buffer);
-		c=atoi(s);
-		if(c==1) while(1){
-			memset(buffer,'\0',(strlen(buffer)+1));
-			memset(tmp,'\0',(strlen(buffer)+1));
-			printf("\n___________________________\n");
-			printf(" SIGNUP \n---------------------------\n");
-			printf("Enter Username: ");
-			scanf("%s",tmp);
-			sprintf(buffer,"SU %s",tmp);
-			msg_len = strlen(buffer);
-			if (msg_len == 4){
-				printf("\nBack!\n");
-				break;
-			}
-			send(clientSocket, buffer, strlen(buffer), 0);
-			
-
-		}else if(c==2){
-
-		}else c=3;
-		printf("Enter Message (Enter NULL to exit): \n");
-		memset(buffer,'\0',(strlen(buffer)+1));
-		fgets(buffer, BUFF_SIZE, stdin);		
-		msg_len = strlen(buffer);
-		if (msg_len == 1){
-			printf("\nExit!\n");
-			break;
-		}
-		send(clientSocket, buffer, strlen(buffer), 0);
-
-		if(recv(clientSocket, buffer, BUFF_SIZE, 0) < 0){
-			printf("[-]Error in receiving data.\n");
-		}else{
-			printf("Server: \n%s\n", buffer);
-		}
+		gets(buffer);
+		c=atoi(buffer);
+		if(c==1) signup(clientSocket);
+			else if(c==2) signin(clientSocket);
+				else {
+					printf("Good bye!\n");
+					break;
+				}
 	}
 	close(clientSocket);
 	printf("[-]Disconnected from server.\n");
