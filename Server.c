@@ -54,6 +54,7 @@ int main(int argc, char *argv[]){
 		printf("[-]Error in binding.\n");
 	}
 
+    FILE *f1;
 
 	while(1){
 		newSocket = accept(sockfd, (struct sockaddr*)&newAddr, &addr_size);
@@ -72,9 +73,30 @@ int main(int argc, char *argv[]){
 					printf("Disconnected from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
 					break;
 				}else{
-					printf("Client %s:%d: %s\n",inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port), buffer);
-					send(newSocket, buffer, strlen(buffer), 0);
-					bzero(buffer, sizeof(buffer));
+					printf("Client %s:%d: %s123\n",inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port), buffer);
+					if(strcmp(buffer, "downfile")==0){
+					    f1 = fopen("server-test.txt","r");
+                        if(f1 == NULL) {
+                            printf("Error! Invalid input file\n");
+                            continue;
+                        }
+                        while(1) {
+                            fgets(buffer, BUFF_SIZE, f1);
+                            if(feof(f1)) {
+                                break;
+                            }else {
+                            printf("123%s\n", buffer);
+                                send(newSocket, buffer, BUFF_SIZE, 0);
+                                bzero(buffer, sizeof(buffer));
+                            }
+                        }
+                        fclose(f1);
+                        strcpy(buffer, "endfile123");
+                        printf("%s\n", buffer);
+                        send(newSocket, buffer, strlen(buffer), 0);
+                        bzero(buffer, sizeof(buffer));
+
+					}
 				}
 			}
 		}
