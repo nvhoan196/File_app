@@ -69,6 +69,7 @@ int main(int argc, char *argv[]){
                     fprintf(f1,"%s",buffer);
         		}
         }
+        
 		fclose(f1);
 	}
 	close(clientSocket);
