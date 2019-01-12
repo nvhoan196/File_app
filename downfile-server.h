@@ -21,3 +21,16 @@ FILE *f1;
                             send(newSocket, buffer, 1024, 0);
                             bzero(buffer, sizeof(buffer));
 }
+
+int checkOpCode(int newSocket, char buffer[1024])
+{
+    char *p;
+    char str[1024];
+    strcpy(str, buffer);
+    p = strtok(str,"|");
+    if(strcmp(p, "DOWNFILE")==0){
+    	downfile(newSocket, buffer); //downfile server
+    	return 1;
+    }
+    return 0;
+}

@@ -1,7 +1,0 @@
-123This is the pointer to the array of elements to be written.This is the pointer to the array of elements to be written.This is the pointer to the array of elements to be written.
-This is the pointer to the array of elements to be written.
-This is the pointer to the array of elements to be written.
-This is the pointer to the array of elements to be written.
-This is the pointer to the array of elements to be written.This is the pointer to the array of elements to be written.This is the pointer to the array of elements to be written.
-This is the pointer to the array of elements to be written.234
-

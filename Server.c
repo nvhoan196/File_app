@@ -73,8 +73,11 @@ int main(int argc, char *argv[]){
 					break;
 				}else{
 					printf("Client %s:%d: %s\n",inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port), buffer);
-					if(strcmp(buffer, "downfile")==0){
-					downfile(newSocket, buffer); //downfile server
+					//nhận message từ client
+					if(checkOpCode(newSocket, buffer) == 0) {
+					    strcpy(buffer, "FUNCTION_NOT_EXIST");
+                        printf("%s\n", buffer);
+                        send(newSocket, buffer, BUFF_SIZE, 0);
 					}
 				}
 			}
