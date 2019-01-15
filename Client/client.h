@@ -234,9 +234,10 @@ int ls(int clientSocket,char c1[3],char c2[BUFF_SIZE]){
 	sprintf(meg,"%s|%s|",c1,c2);
 	send(clientSocket,meg,strlen(meg),0);
 	while(1){
-		memset(meg,'\0',(strlen(meg)+1));
+		bzero(meg, sizeof(meg));
 		recv(clientSocket,meg,BUFF_SIZE,0);
 		if (meg[0]==' ') break;
+		if (meg[1]==' ') break;
 		printf("%s\n", meg);
 	}
 	return 1;
@@ -259,7 +260,6 @@ int back(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
 	recv(clientSocket,meg,20,0);
 	if (!strcmp(meg,"OK")) printf("\n");
 	else printf("Can not to back folder %s\n", c2);
-	printf("Meg: %s\n", meg);
 	return 1;
 	}
 
