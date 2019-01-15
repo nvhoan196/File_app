@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dirent.h>
+#include "downfile-server.h"
 
 #define BUFF_SIZE 1024
 
@@ -54,7 +55,6 @@ int main(int argc, char *argv[]){
 		printf("[-]Error in binding.\n");
 	}
 
-
 	while(1){
 		newSocket = accept(sockfd, (struct sockaddr*)&newAddr, &addr_size);
 		if(newSocket < 0){
@@ -73,8 +73,12 @@ int main(int argc, char *argv[]){
 					break;
 				}else{
 					printf("Client %s:%d: %s\n",inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port), buffer);
-					send(newSocket, buffer, strlen(buffer), 0);
-					bzero(buffer, sizeof(buffer));
+					//nhận message từ client
+					if(checkOpCode(newSocket, buffer) == 0) {
+					    strcpy(buffer, "FUNCTION_NOT_EXIST");
+                        printf("%s\n", buffer);
+                        send(newSocket, buffer, BUFF_SIZE, 0);
+					}
 				}
 			}
 		}
