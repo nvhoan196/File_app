@@ -125,14 +125,14 @@ int signin(int newSocket,Alist *root,char tmp[255]){
 		sprintf(buffer,"OK");
 		send(newSocket, buffer, BUFF_SIZE, 0);
 		recv(newSocket, buffer, BUFF_SIZE, 0);
-		if (checkpass(root,tmp,buffer)==1){
+		if (checkpass(root,tmp,buffer)){
 			memset(buffer,'\0',255);
-			sprintf(buffer,"S");
+			sprintf(buffer,"SS");
 			send(newSocket, buffer, BUFF_SIZE, 0);
 			process(newSocket, tmp);
 		} else {
 			memset(tmp,'\0',255);
-			sprintf(tmp,"C");
+			sprintf(tmp,"CC");
 			send(newSocket, tmp, BUFF_SIZE, 0);
 		}
 	}
@@ -367,6 +367,7 @@ int process(int sockfd, char uname[100]){
 	strcpy(cur,uname);
 	strcpy(ss,link);
 	while(1){
+		printf("Cur:==%s==\n", cur);
 		send(sockfd, cur, BUFF_SIZE, 0);
 		bzero(buffer, sizeof(buffer));
 		strcpy(link,ss);
@@ -375,9 +376,12 @@ int process(int sockfd, char uname[100]){
 		printf("\nBUFF---%s---\n", buffer);	//////////////////
 		if (!strcmp(buffer,"Continue")) continue;
 		if (!strcmp(buffer,"out")) break;
-		if(buffer[0] == '\0'){
-			break;
-		}else checkOpCode(sockfd, buffer,link);
+		if (buffer[0]=='\0') break;
+		if(checkOpCode(sockfd, buffer, link) == 0) {
+			strcpy(buffer, "FUNCTION_NOT_EXIST");
+            printf("%s\n", buffer);
+            send(sockfd, buffer, BUFF_SIZE, 0);
+        }
 	}
 	return 1;
 }
