@@ -302,7 +302,7 @@ int ls(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	DIR *dir;
 	struct dirent *ent;
 	if ((dir = opendir(link)) != NULL) {
-  /* print all the files and directories within directory */
+  	/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) {
 			bzero(buffer, sizeof(buffer));
 			sprintf (buffer,"%s", ent->d_name);
@@ -313,12 +313,12 @@ int ls(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 		send(sockfd,buffer,5,0);
 		printf("DA GUI TH KET THUC\n");
 		closedir (dir);
-	} else {
-  /* could not open directory */
-		perror ("");
 		return 1;
+	} else {
+  	/* could not open directory */
+		perror ("");
+		return 0;
 	}
-
 }
 
 int checkOpCode(int newSocket, char buffer[BUFF_SIZE],char link[BUFF_SIZE]){
