@@ -13,7 +13,6 @@
 #define BUFF_SIZE 1024
 char cur[100];
 char ss[BUFF_SIZE];
-char home[255];
 
 typedef struct Account
 {
@@ -82,19 +81,19 @@ int signup(int newSocket,Alist *root,char tmp[255]){
 	if (checkname(tmp,root)) {
 		memset(buffer,'\0',(strlen(buffer)+1));
 		sprintf(buffer,"OK");
-		send(newSocket, buffer, 2, 0);
+		send(newSocket, buffer, BUFF_SIZE, 0);
 		recv(newSocket, buffer, BUFF_SIZE, 0);
 		if (add(root,tmp,buffer)){
 			MakeFolder(link,tmp);
 			memset(tmp,'\0',255);
 			sprintf(tmp,"S");
-			send(newSocket, tmp, 1, 0);
+			send(newSocket, tmp, BUFF_SIZE, 0);
 			return 0;
 		}
 	}else{
 		memset(tmp,'\0',255);
 		sprintf(tmp,"EX");
-		send(newSocket, tmp, strlen(tmp), 0);
+		send(newSocket, tmp, BUFF_SIZE, 0);
 		return 1;
 	}
 }
@@ -119,22 +118,22 @@ int signin(int newSocket,Alist *root,char tmp[255]){
 	if (checkname(tmp,root)) {
 		memset(tmp,'\0',255);
 		sprintf(tmp,"NE");
-		send(newSocket, tmp, strlen(tmp), 0);
+		send(newSocket, tmp, BUFF_SIZE, 0);
 		return 1;
 	}else{
 		memset(buffer,'\0',(strlen(buffer)+1));
 		sprintf(buffer,"OK");
-		send(newSocket, buffer, 2, 0);
+		send(newSocket, buffer, BUFF_SIZE, 0);
 		recv(newSocket, buffer, BUFF_SIZE, 0);
 		if (checkpass(root,tmp,buffer)==1){
 			memset(buffer,'\0',255);
 			sprintf(buffer,"S");
-			send(newSocket, buffer, 1, 0);
+			send(newSocket, buffer, BUFF_SIZE, 0);
 			process(newSocket, tmp);
 		} else {
 			memset(tmp,'\0',255);
 			sprintf(tmp,"C");
-			send(newSocket, tmp, 1, 0);
+			send(newSocket, tmp, BUFF_SIZE, 0);
 		}
 	}
 	return 0;
@@ -194,6 +193,7 @@ int upfile(int sockfd,char buffer[BUFF_SIZE],char link[BUFF_SIZE]){
 
 int remo(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	char linkf[BUFF_SIZE];
+	char sys[BUFF_SIZE];
 	int i,l,k;
 	strcpy(linkf,link);
 	l=strlen(linkf);
@@ -204,16 +204,18 @@ int remo(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 		linkf[++l]=buffer[k];
 	}
 	linkf[++l]='\0';
-	if (!rmtree(linkf)) {
+	sprintf(sys,"rm -rf %s", linkf);
+	printf("===%s===\n", sys);
+	if (!system(sys)) {
 		bzero(buffer, sizeof(buffer));
 		sprintf(buffer,"OK");
-		send(sockfd,buffer,2,0);
+		send(sockfd,buffer,BUFF_SIZE,0);
 		return 1;
 	}
 	else {
 		bzero(buffer, sizeof(buffer));
 		sprintf(buffer,"ER");
-		send(sockfd,buffer,2,0);
+		send(sockfd,buffer,BUFF_SIZE,0);
 		return 0;
 	}
 }
@@ -233,13 +235,13 @@ int dete(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	if (!remove(linkf)) {
 		bzero(buffer, sizeof(buffer));
 		sprintf(buffer,"OK");
-		send(sockfd,buffer,2,0);
+		send(sockfd,buffer,BUFF_SIZE,0);
 		return 1;
 	}
 	else {
 		bzero(buffer, sizeof(buffer));
 		sprintf(buffer,"ER");
-		send(sockfd,buffer,2,0);
+		send(sockfd,buffer,BUFF_SIZE,0);
 		return 0;
 	}
 }
@@ -264,7 +266,7 @@ int go(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
   /* print all the files and directories within directory */
 		bzero(meg, sizeof(meg));
 		sprintf (meg,"OK");
-		send(sockfd,meg,5,0);
+		send(sockfd,meg,BUFF_SIZE,0);
 		sprintf (ss,"%s",linkf);
 		sprintf(cur,"%s",fname);
 		closedir (dir);
@@ -272,7 +274,7 @@ int go(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
   /* could not open directory */
 		bzero(meg, sizeof(meg));
 		sprintf (meg,"ER");
-		send(sockfd,meg,5,0);
+		send(sockfd,meg,BUFF_SIZE,0);
 		perror ("");
 		return 1;
 	}
@@ -286,19 +288,19 @@ int back(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	for (i = strlen(link); i > 3; i--) if (link[i] =='/') break;
 	for (k = i; k < strlen(link); k++) cur[j++]=link[k];
 	cur[j]='\0';
-	if (!strcmp(home,link)) {
+	if (!strcmp("SD/",link)) {
 		bzero(meg, sizeof(meg));
 		sprintf (meg,"ER");
-		send(sockfd,meg,5,0);
+		send(sockfd,meg,BUFF_SIZE,0);
 		return 0;
 	}
 	sprintf (ss,"%s",link);
 	bzero(meg, sizeof(meg));
 	sprintf (meg,"OK");
-	send(sockfd,meg,5,0);
+	send(sockfd,meg,BUFF_SIZE,0);
 	return 1;
 }
-int ls(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
+void ls(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	DIR *dir;
 	struct dirent *ent;
 	if ((dir = opendir(link)) != NULL) {
@@ -310,14 +312,12 @@ int ls(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 		}
 		bzero(buffer, sizeof(buffer));
 		sprintf (buffer,"  ");
-		send(sockfd,buffer,5,0);
+		send(sockfd,buffer,BUFF_SIZE,0);
 		printf("DA GUI TH KET THUC\n");
 		closedir (dir);
-		return 1;
 	} else {
   	/* could not open directory */
 		perror ("");
-		return 0;
 	}
 }
 
@@ -343,7 +343,7 @@ int checkOpCode(int newSocket, char buffer[BUFF_SIZE],char link[BUFF_SIZE]){
        	return 1;
     }
     if (!strcmp(p,"remove")){
-    	dete(newSocket,buffer,link);
+    	remo(newSocket,buffer,link);
        	return 1;
     }
     if (!strcmp(p,"goto")){
@@ -366,9 +366,8 @@ int process(int sockfd, char uname[100]){
 	strcat(link,uname);
 	strcpy(cur,uname);
 	strcpy(ss,link);
-	strcpy(home,link);
 	while(1){
-		send(sockfd, cur, strlen(cur), 0);
+		send(sockfd, cur, BUFF_SIZE, 0);
 		bzero(buffer, sizeof(buffer));
 		strcpy(link,ss);
 		printf("%s\n", link);

@@ -42,7 +42,7 @@ void enter(char uname[100],cur[100]){
 }
 void cmdlist(int clientSocket){
 	char meg[]="Continue";
-	send(clientSocket, meg,8,0);
+	send(clientSocket, meg,BUFF_SIZE,0);
 	printf("\n___________________________\n");
 	printf("ls: show folder and file\nout: logout\n");
 	printf("upfile|[file_path]: upload file\n");
@@ -69,7 +69,7 @@ void signup(int clientSocket){
 			printf("\nBack!\n");
 			break;
 		}
-		send(clientSocket, b, strlen(b), 0);
+		send(clientSocket, b, BUFF_SIZE, 0);
 		memset(op,'\0',4);
 		recv(clientSocket, b, BUFF_SIZE, 0);
 		op[0]=b[0]; op[1]=b[1];
@@ -79,7 +79,7 @@ void signup(int clientSocket){
 			printf("Enter password: ");
 			memset(b,'\0',(strlen(b)+1));
 			gets(b);
-			send(clientSocket, b, strlen(b), 0);
+			send(clientSocket, b, BUFF_SIZE, 0);
 			if (recv(clientSocket, b, BUFF_SIZE, 0)) printf("Signup sucessfuly!\n");
 			break;
 		}
@@ -103,7 +103,7 @@ void signin(int clientSocket){
 			printf("\nBack!\n");
 			break;
 		}
-		send(clientSocket, b, strlen(b), 0);
+		send(clientSocket, b, BUFF_SIZE, 0);
 		memset(op,'\0',4);
 		recv(clientSocket, b, BUFF_SIZE, 0);
 		op[0]=b[0]; op[1]=b[1];
@@ -113,7 +113,7 @@ void signin(int clientSocket){
 			printf("Enter password: ");
 			memset(b,'\0',(strlen(b)+1));
 			gets(b);
-			send(clientSocket, b, strlen(b), 0);
+			send(clientSocket, b, BUFF_SIZE, 0);
 			recv(clientSocket, b, 2, 0);
 			if (b[0]=='S') {
 				printf("Signin sucessfuly!\n");
@@ -155,7 +155,7 @@ int upfile(int clientSocket, char *c1,char *c2){
 		return 0;
 	}
 	sprintf(tmp,"%s|%s|",c1,fname);
-	send(clientSocket, tmp, strlen(tmp), 0);
+	send(clientSocket, tmp, BUFF_SIZE, 0);
 	while(1) {
             /* First read file in chunks of 256 bytes */
 		unsigned char buff[1024]={0};
@@ -202,14 +202,14 @@ char *get2(char cmd[500]){
 	return &b[0];
 }
 void conti(int clientSocket){
-	send(clientSocket, "Continue",8,0);
+	send(clientSocket, "Continue",BUFF_SIZE,0);
 }
 int remo(int clientSocket,char c1[8],char c2[BUFF_SIZE]){
 	char meg[BUFF_SIZE];
 	sprintf(meg,"%s|%s|",c1,c2);
-	send(clientSocket,meg,strlen(meg),0);
+	send(clientSocket,meg,BUFF_SIZE,0);
 	memset(meg,'\0',(strlen(meg)+1));
-	recv(clientSocket,meg,20,0);
+	recv(clientSocket,meg,BUFF_SIZE,0);
 	if (!strcmp(meg,"OK")) printf("Delete sucessfuly!\n");
 	else printf("Folder \"%s\" not exist!\n", c2);
 	return 1;
@@ -217,32 +217,30 @@ int remo(int clientSocket,char c1[8],char c2[BUFF_SIZE]){
 int dele(int clientSocket,char c1[8],char c2[BUFF_SIZE]){
 	char meg[BUFF_SIZE];
 	sprintf(meg,"%s|%s|",c1,c2);
-	send(clientSocket,meg,strlen(meg),0);
+	send(clientSocket,meg,BUFF_SIZE,0);
 	memset(meg,'\0',(strlen(meg)+1));
-	recv(clientSocket,meg,20,0);
+	recv(clientSocket,meg,BUFF_SIZE,0);
 	if (!strcmp(meg,"OK")) printf("Delete sucessfuly!\n");
 	else printf("File \"%s\" not exist!\n", c2);
 	return 1;
 }
-int ls(int clientSocket,char c1[3],char c2[BUFF_SIZE]){
+void ls(int clientSocket,char c1[3],char c2[BUFF_SIZE]){
 	char meg[BUFF_SIZE];
 	sprintf(meg,"%s|%s|",c1,c2);
-	send(clientSocket,meg,strlen(meg),0);
+	send(clientSocket,meg,BUFF_SIZE,0);
 	while(1){
 		bzero(meg, sizeof(meg));
 		recv(clientSocket,meg,BUFF_SIZE,0);
 		if (meg[0]==' ') break;
 		printf("%s\n", meg);
 	}
-	printf("Da o day\n");
-	return 1;
 }
 int go(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
 	char meg[BUFF_SIZE];
 	sprintf(meg,"%s|%s|",c1,c2);
-	send(clientSocket,meg,strlen(meg),0);
+	send(clientSocket,meg,BUFF_SIZE,0);
 	memset(meg,'\0',(strlen(meg)+1));
-	recv(clientSocket,meg,20,0);
+	recv(clientSocket,meg,BUFF_SIZE,0);
 	if (!strcmp(meg,"OK")) printf("\n");
 	else printf("Can not goto folder \"%s\"\n", c2);
 	return 1;
@@ -250,9 +248,9 @@ int go(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
 int back(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
 	char meg[BUFF_SIZE];
 	sprintf(meg,"%s|%s|",c1,c2);
-	send(clientSocket,meg,strlen(meg),0);
+	send(clientSocket,meg,BUFF_SIZE,0);
 	memset(meg,'\0',(strlen(meg)+1));
-	recv(clientSocket,meg,20,0);
+	recv(clientSocket,meg,BUFF_SIZE,0);
 	if (!strcmp(meg,"OK")) printf("\n");
 	else printf("Can not to back folder %s\n", c2);
 	return 1;
@@ -264,7 +262,7 @@ int process(int clientSocket, char uname[100]){
 	hello(uname);
 	while(1){
 		memset(cur,'\0',(strlen(cur)+1));
-		recv(clientSocket, cur, 100, 0);
+		recv(clientSocket, cur, BUFF_SIZE, 0);
 		enter(uname,cur);
 		fflush(stdin);
 		memset(cmd,'\0',(strlen(cmd)+1));
@@ -272,7 +270,7 @@ int process(int clientSocket, char uname[100]){
 		c1 = get1(cmd);
 		c2 = get2(cmd);
 		if (!strcmp(c1,"out")) {
-			send(clientSocket,c1,4,0);
+			send(clientSocket,c1,BUFF_SIZE,0);
 			break;
 		}
 		if (!strcmp(c1,"help")) { 
