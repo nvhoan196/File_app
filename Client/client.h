@@ -114,7 +114,7 @@ void signin(int clientSocket){
 			memset(b,'\0',(strlen(b)+1));
 			gets(b);
 			send(clientSocket, b, BUFF_SIZE, 0);
-			recv(clientSocket, b, 2, 0);
+			recv(clientSocket, b, BUFF_SIZE, 0);
 			if (b[0]=='S') {
 				printf("Signin sucessfuly!\n");
 
@@ -261,8 +261,10 @@ int process(int clientSocket, char uname[100]){
 	char *c1,*c2;
 	hello(uname);
 	while(1){
-		memset(cur,'\0',(strlen(cur)+1));
+		bzero(cur, sizeof(cur));
 		recv(clientSocket, cur, BUFF_SIZE, 0);
+		printf("Cur:==%s==\n", cur);
+		if(strcmp(cur,"FUNCTION_NOT_EXIST") == 0) continue;
 		enter(uname,cur);
 		fflush(stdin);
 		memset(cmd,'\0',(strlen(cmd)+1));
