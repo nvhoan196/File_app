@@ -1,7 +1,7 @@
 void downfile(int newSocket, char buffer[1024])
 {
 FILE *f1;
-    f1 = fopen("server-test.txt","r");
+    f1 = fopen("server-test.txt","rb");
                             if(f1 == NULL) {
                                 printf("Error! Invalid input file\n");
                                 exit(1);

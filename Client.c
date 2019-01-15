@@ -50,7 +50,6 @@ int main(int argc, char *argv[]){
 			printf("\nExit!\n");
 			break;
 		}
-		char str[] = "This is tutorialspoint.com";
 		send(clientSocket, buffer, strlen(buffer)-1, 0);
         downFile(clientSocket, buffer); //downfile client
 	}

@@ -1,7 +1,21 @@
 void downFile(int clientSocket, char buffer[1024])
 {
     FILE *f1;
-    f1 = fopen("result.txt","w");
+
+    char *p;
+    char str[1024];
+    char *fileName = (char *)malloc(255);
+
+    strcpy(str, buffer);
+//example : DOWNFILE|test.txt|/Users/mavuong/Desktop|
+    p = strtok(str, "|");
+    p = strtok(NULL, "|");
+    strcpy(fileName, p);
+    p = strtok(NULL, "|");//file path
+    strcat(p, "/");
+    strcat(p, fileName);
+    printf("%s\n", p);
+    f1 = fopen(p,"wb");
         if(f1 == NULL) {
                                     printf("Error! Invalid input file\n");
                                     exit(1);
