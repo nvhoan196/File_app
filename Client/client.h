@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #define BUFF_SIZE 1024
+char cur[100];
 
 void menu()
 {
@@ -39,11 +40,16 @@ void enter(char uname[100],cur[100]){
 	printf("Enter the \"help\" for show command list\n");
 	printf("Enter Command %s ~%s:",uname,cur);
 }
-void cmdlist(){
+void cmdlist(int clientSocket){
+	char meg[]="Continue";
+	send(clientSocket, meg,8,0);
 	printf("\n___________________________\n");
 	printf("ls: show folder and file\nout: logout\n");
-	printf("upfile [filepath]: upload file\n");
-	printf("remove [filename]: delete file\n");
+	printf("upfile [file_path]: upload file\n");
+	printf("delete [file_name]: delete file\n");
+	printf("remove [folder_name]: delete folder\n");
+	printf("back: Go back to the parent folder\n");
+	printf("home: Go back to home folder\n");
 
 }
 void signup(int clientSocket){
@@ -143,8 +149,8 @@ int upfile(int clientSocket, char *c1,char *c2){
 		fname[j++]=tmp[i++];
 	printf("__%s__\n", tmp);
 	printf("__%s__\n", fname);
-	FILE *fp = fopen(tmp,"rb");
-	if(fp==NULL) {
+	FILE *fp;
+	if((fp= fopen(tmp,"rb"))==NULL) {
 		printf("File open error");
 		return 0;
 	}
@@ -200,31 +206,118 @@ char *get2(char cmd[500]){
 	b[j]='\0';
 	return &b[0];
 }
+void conti(int clientSocket){
+	send(clientSocket, "Continue",8,0);
+}
+int remo(int clientSocket,char c1[8],char c2[BUFF_SIZE]){
+	char meg[BUFF_SIZE];
+	sprintf(meg,"%s|%s|",c1,c2);
+	send(clientSocket,meg,strlen(meg),0);
+	memset(meg,'\0',(strlen(meg)+1));
+	recv(clientSocket,meg,20,0);
+	if (!strcmp(meg,"OK")) printf("Delete sucessfuly!\n");
+	else printf("Folder \"%s\" not exist!\n", c2);
+	return 1;
+}
+int dele(int clientSocket,char c1[8],char c2[BUFF_SIZE]){
+	char meg[BUFF_SIZE];
+	sprintf(meg,"%s|%s|",c1,c2);
+	send(clientSocket,meg,strlen(meg),0);
+	memset(meg,'\0',(strlen(meg)+1));
+	recv(clientSocket,meg,20,0);
+	if (!strcmp(meg,"OK")) printf("Delete sucessfuly!\n");
+	else printf("File \"%s\" not exist!\n", c2);
+	return 1;
+}
+int ls(int clientSocket,char c1[3],char c2[BUFF_SIZE]){
+	char meg[BUFF_SIZE];
+	sprintf(meg,"%s|%s|",c1,c2);
+	send(clientSocket,meg,strlen(meg),0);
+	while(1){
+		memset(meg,'\0',(strlen(meg)+1));
+		recv(clientSocket,meg,BUFF_SIZE,0);
+		if (meg[0]==' ') break;
+		printf("%s\n", meg);
+	}
+	return 1;
+}
+int go(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
+	char meg[BUFF_SIZE];
+	sprintf(meg,"%s|%s|",c1,c2);
+	send(clientSocket,meg,strlen(meg),0);
+	memset(meg,'\0',(strlen(meg)+1));
+	recv(clientSocket,meg,20,0);
+	if (!strcmp(meg,"OK")) printf("\n");
+	else printf("Can not goto folder \"%s\"\n", c2);
+	return 1;
+}
+int back(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
+	char meg[BUFF_SIZE];
+	sprintf(meg,"%s|%s|",c1,c2);
+	send(clientSocket,meg,strlen(meg),0);
+	memset(meg,'\0',(strlen(meg)+1));
+	recv(clientSocket,meg,20,0);
+	if (!strcmp(meg,"OK")) printf("\n");
+	else printf("Can not to back folder %s\n", c2);
+	printf("Meg: %s\n", meg);
+	return 1;
+	}
 
 int process(int clientSocket, char uname[100]){
 	char cmd[BUFF_SIZE];
-	char cur[100];
 	char *c1,*c2;
 	hello(uname);
 	while(1){
+		memset(cur,'\0',(strlen(cur)+1));
 		recv(clientSocket, cur, 100, 0);
 		enter(uname,cur);
+		fflush(stdin);
+		memset(cmd,'\0',(strlen(cmd)+1));
 		gets(cmd);
 		c1 = get1(cmd);
 		c2 = get2(cmd);
-		if (!strcmp(c1,"out")) break;
-		if (!strcmp(c1,"help")) cmdlist();
+		if (!strcmp(c1,"out")) {
+			send(clientSocket,c1,4,0);
+			break;
+		}
+		if (!strcmp(c1,"help")) { 
+			cmdlist(clientSocket);
+			continue;
+		}
 		if (!strcmp(c1,"upfile")) {
-			upfile(clientSocket,c1,c2);
+			if (upfile(clientSocket,c1,c2))
+				continue;
+			else {
+				conti(clientSocket);
+				continue;
+			}
+		}
+		if (!strcmp(c1,"delete")){
+			dele(clientSocket,c1,c2);
+			continue;
+		}
+		if (!strcmp(c1,"remove")){
+			remo(clientSocket,c1,c2);
 			continue;
 		}
 		if (!strcmp(c1,"downfile")){
 		//downfile(clientSocket,c1,c2);
 			continue;
 		}
+		if (!strcmp(c1,"ls")){
+			ls(clientSocket,c1,c2);
+			continue;
+		}
+		if(!strcmp(c1,"goto")){
+			go(clientSocket,c1,c2);
+			continue;
+		}
+		if(!strcmp(c1,"back")){
+			back(clientSocket,c1,c2);
+			continue;
+		}
 		printf("Command not found!\n");
-		sprintf(cmd,"Continue");
-		send(clientSocket, cmd,8,0);
+		conti(clientSocket);
 	}
 	return 1;
 }
