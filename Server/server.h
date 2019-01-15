@@ -12,6 +12,8 @@
 
 #define BUFF_SIZE 1024
 char cur[100];
+char ss[BUFF_SIZE];
+char home[255];
 
 typedef struct Account
 {
@@ -203,11 +205,13 @@ int remo(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	}
 	linkf[++l]='\0';
 	if (!rmtree(linkf)) {
+		bzero(buffer, sizeof(buffer));
 		sprintf(buffer,"OK");
 		send(sockfd,buffer,2,0);
 		return 1;
 	}
-	else { 
+	else {
+		bzero(buffer, sizeof(buffer));
 		sprintf(buffer,"ER");
 		send(sockfd,buffer,2,0);
 		return 0;
@@ -227,11 +231,13 @@ int dete(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	}
 	linkf[++l]='\0';
 	if (!remove(linkf)) {
+		bzero(buffer, sizeof(buffer));
 		sprintf(buffer,"OK");
 		send(sockfd,buffer,2,0);
 		return 1;
 	}
-	else { 
+	else {
+		bzero(buffer, sizeof(buffer));
 		sprintf(buffer,"ER");
 		send(sockfd,buffer,2,0);
 		return 0;
@@ -256,13 +262,15 @@ int go(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	fname[j]='\0';
 	if ((dir = opendir(linkf)) != NULL) {
   /* print all the files and directories within directory */
+		bzero(meg, sizeof(meg));
 		sprintf (meg,"OK");
 		send(sockfd,meg,5,0);
-		sprintf (link,"%s",linkf);
+		sprintf (ss,"%s",linkf);
 		sprintf(cur,"%s",fname);
 		closedir (dir);
 	} else {
   /* could not open directory */
+		bzero(meg, sizeof(meg));
 		sprintf (meg,"ER");
 		send(sockfd,meg,5,0);
 		perror ("");
@@ -270,32 +278,40 @@ int go(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	}
 }
 int back(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
-	char meg[BUFF_SIZE],linkf[BUFF_SIZE];
-	strcpy(linkf,link);
+	char meg[BUFF_SIZE];
 	int i,k,j=0;
-	for (i = strlen(linkf); i > 3; i--) if (buffer[i] =='/') break;
-	for (k = i; k < strlen(linkf); k++) linkf[k]='\0';
-	sprintf (link,"%s",linkf);
-	for (i = strlen(link); i > 3; i--) if (buffer[i] =='/') break;
+	for (i = strlen(link); i > 3; i--) if (link[i] =='/') break;
+	printf("%d\n", i);
+	for (k = i; k < strlen(link); k++) link[k]='\0';
+	for (i = strlen(link); i > 3; i--) if (link[i] =='/') break;
 	for (k = i; k < strlen(link); k++) cur[j++]=link[k];
 	cur[j]='\0';
+	if (!strcmp(home,link)) {
+		bzero(meg, sizeof(meg));
+		sprintf (meg,"ER");
+		send(sockfd,meg,5,0);
+		return 0;
+	}
+	sprintf (ss,"%s",link);
+	bzero(meg, sizeof(meg));
 	sprintf (meg,"OK");
 	send(sockfd,meg,5,0);
 	return 1;
 }
 int ls(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	DIR *dir;
-	char meg[BUFF_SIZE];
 	struct dirent *ent;
 	if ((dir = opendir(link)) != NULL) {
   /* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) {
-			sprintf (meg,"%s", ent->d_name);
-			send(sockfd,meg,BUFF_SIZE,0);
+			bzero(buffer, sizeof(buffer));
+			sprintf (buffer,"%s", ent->d_name);
+			send(sockfd,buffer,BUFF_SIZE,0);
 		}
-		sprintf (meg,"  ");
-		send(sockfd,meg,5,0);
-		printf("End of ls--%s==\n",meg);
+		bzero(buffer, sizeof(buffer));
+		sprintf (buffer,"  ");
+		send(sockfd,buffer,5,0);
+		printf("DA GUI TH KET THUC\n");
 		closedir (dir);
 	} else {
   /* could not open directory */
@@ -334,6 +350,10 @@ int checkOpCode(int newSocket, char buffer[BUFF_SIZE],char link[BUFF_SIZE]){
     	go(newSocket,buffer,link);
        	return 1;
     }
+    if (!strcmp(p,"back")){
+    	back(newSocket,buffer,link);
+       	return 1;
+    }
     return 0;
 }
 
@@ -345,12 +365,15 @@ int process(int sockfd, char uname[100]){
 	int i;
 	strcat(link,uname);
 	strcpy(cur,uname);
+	strcpy(ss,link);
+	strcpy(home,link);
 	while(1){
 		send(sockfd, cur, strlen(cur), 0);
 		bzero(buffer, sizeof(buffer));
+		strcpy(link,ss);
 		printf("%s\n", link);
 		recv(sockfd, buffer, BUFF_SIZE, 0);
-		printf("BUFF---%s---\n", buffer);	//////////////////
+		printf("\nBUFF---%s---\n", buffer);	//////////////////
 		if (!strcmp(buffer,"Continue")) continue;
 		if (!strcmp(buffer,"out")) break;
 		if(buffer[0] == '\0'){
