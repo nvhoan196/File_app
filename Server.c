@@ -1,26 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <dirent.h>
-
-#define BUFF_SIZE 1024
+#include "hoannv.h"
 
 int main(int argc, char *argv[]){
+	Alist *root;
+	root=(Alist*)malloc(sizeof(Alist));
+	readfile(root);
 
 	int sockfd, ret;
-	 struct sockaddr_in serverAddr;
+	struct sockaddr_in serverAddr;
 
 	int newSocket;
 	struct sockaddr_in newAddr;
 
 	socklen_t addr_size;
 
-	char buffer[1024];
+	char buffer[1024],op[3],tmp[255];
+	int len,i;
 	pid_t childpid;
 
 	if(argc != 2){
@@ -65,15 +59,29 @@ int main(int argc, char *argv[]){
 		if((childpid = fork()) == 0){
 			close(sockfd);
 
-			while(1){
+			while(1){		//process
 				bzero(buffer, sizeof(buffer));
-				recv(newSocket, buffer, BUFF_SIZE, 0);
+				memset(buffer,'\0',(strlen(buffer)+1));
+				len=recv(newSocket, buffer, BUFF_SIZE, 0);
 				if(buffer[0] == '\0'){
 					printf("Disconnected from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
 					break;
-				}else{
-					printf("Client %s:%d: %s\n",inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port), buffer);
-					send(newSocket, buffer, strlen(buffer), 0);
+				}else{					
+					memset(op,'\0',(strlen(op)+1));
+					op[0]=buffer[0]; op[1]=buffer[1];
+					for (i = 3; i < len; i++)	tmp[i-3]=buffer[i];
+
+					if (strcmp("SU", op)==0) 
+						if (signup(newSocket,root,tmp)) continue;
+
+					if (strcmp("SI", op)==0) 
+						if (signin(newSocket,root,tmp)) continue;
+
+
+
+
+
+
 					bzero(buffer, sizeof(buffer));
 				}
 			}
@@ -82,7 +90,5 @@ int main(int argc, char *argv[]){
 	}
 
 	close(newSocket);
-
-
 	return 0;
 }

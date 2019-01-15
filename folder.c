@@ -7,7 +7,7 @@
 int main() {
 	DIR *dir;
 	struct dirent *ent;
-	if ((dir = opendir("./test_folder")) != NULL) {
+	if ((dir = opendir("./hoannv")) != NULL) {
   /* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) {
 			printf ("%s\n", ent->d_name);
@@ -19,3 +19,4 @@ int main() {
 		return 1;
 	}
 }
+dd 
