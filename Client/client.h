@@ -45,9 +45,9 @@ void cmdlist(int clientSocket){
 	send(clientSocket, meg,8,0);
 	printf("\n___________________________\n");
 	printf("ls: show folder and file\nout: logout\n");
-	printf("upfile [file_path]: upload file\n");
-	printf("delete [file_name]: delete file\n");
-	printf("remove [folder_name]: delete folder\n");
+	printf("upfile|[file_path]: upload file\n");
+	printf("delete|[file_name]: delete file\n");
+	printf("remove|[folder_name]: delete folder\n");
 	printf("back: Go back to the parent folder\n");
 	printf("home: Go back to home folder\n");
 
@@ -184,7 +184,7 @@ char *get1(char cmd[500]){
 	for (i = 0; i < strlen(cmd); i++) 
 		if (cmd[i] !=' ') break;
 	for (k = i; k < strlen(cmd); k++){
-		if (cmd[k] ==' ') break;
+		if (cmd[k] =='|') break;
 		a[j++]=cmd[k];
 	}
 	a[j]='\0';
@@ -193,14 +193,9 @@ char *get1(char cmd[500]){
 char *get2(char cmd[500]){
 	char b[500];
 	int j=0,i,k;
-	for (i = 0; i < strlen(cmd); i++) 
-		if (cmd[i] !=' ') break;
-	for (k = i; k < strlen(cmd); k++) 
-		if (cmd[k] ==' ') break;
-	for (i = k; i < strlen(cmd); i++) 
-		if (cmd[i] !=' ') break;
-	for (k = i; k < strlen(cmd); k++){
-		if (cmd[k] ==' ') break;
+	for (i=0; i < strlen(cmd); i++) 
+		if (cmd[i] =='|') break;
+	for (k = i+1; k < strlen(cmd); k++){
 		b[j++]=cmd[k];
 	}
 	b[j]='\0';
@@ -237,9 +232,9 @@ int ls(int clientSocket,char c1[3],char c2[BUFF_SIZE]){
 		bzero(meg, sizeof(meg));
 		recv(clientSocket,meg,BUFF_SIZE,0);
 		if (meg[0]==' ') break;
-		if (meg[1]==' ') break;
 		printf("%s\n", meg);
 	}
+	printf("Da o day\n");
 	return 1;
 }
 int go(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
