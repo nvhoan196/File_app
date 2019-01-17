@@ -298,6 +298,20 @@ int back(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
 
     //end downfile_client/h
 
+
+    void renameClient(int clientSocket, char buffer[1024])
+    {
+
+                send(clientSocket, buffer, BUFF_SIZE, 0);
+                bzero(buffer, sizeof(buffer));
+                recv(clientSocket, buffer, 1024, 0);
+                if(strcmp(buffer, "OK") == 0) {
+                    printf("rename success!\n");
+                }else {
+                    printf("rename fail!\n");
+                }
+    }
+
 int process(int clientSocket, char uname[100]){
 	char cmd[BUFF_SIZE];
 	char *c1,*c2;
@@ -353,6 +367,10 @@ int process(int clientSocket, char uname[100]){
 			back(clientSocket,c1,c2);
 			continue;
 		}
+		if(!strcmp(c1,"rename")){
+        			renameClient(clientSocket,cmd);
+        			continue;
+        		}
 		printf("Command not found!\n");
 		conti(clientSocket);
 	}

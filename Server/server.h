@@ -25,6 +25,74 @@ typedef struct Alist
 	Account acc;
 }Alist;
 
+//edit same file at the same time
+
+void updateAction(char buffer[BUFF_SIZE], char linkServer[BUFF_SIZE])
+{
+    FILE *f;
+    char link[BUFF_SIZE] = "edit_same_file/";
+    strcat(link, "xxx.txt");
+    f = fopen(link, "a+");
+    fprintf(f, "%s\n", linkServer);
+    fclose(f);
+}
+
+int checkExitAction(char linkServer[BUFF_SIZE])
+{
+    FILE *f;
+    char readLink[BUFF_SIZE];
+    char link[BUFF_SIZE] = "edit_same_file/";
+    char *p;
+    strcat(link, "xxx.txt");
+    f = fopen(link, "a+");
+    rewind(f);
+    bzero(readLink, sizeof(readLink));
+    while(!feof(f)) {
+        fgets(readLink, BUFF_SIZE, f);
+        p = strtok(readLink, "\n");
+        printf("%s123\n", p);
+        if(strcmp(linkServer, p) == 0){
+        printf("11111111111\n");
+        return 0;}
+    }
+    fclose(f);
+    return 1;
+}
+
+void deleteAction(char linkServer[BUFF_SIZE])
+{
+    FILE *f, *f1;
+        char readLink[BUFF_SIZE];
+        char link[BUFF_SIZE] = "edit_same_file/";
+        char *p;
+        char linkDraft[BUFF_SIZE] = "edit_same_file_draft/";
+        strcat(linkDraft, "xxx.txt");
+        strcat(link, "xxx.txt");
+        f = fopen(link, "a+");
+        f1 = fopen(linkDraft, "w");
+        rewind(f);
+        while(!feof(f)) {
+            fgets(readLink, BUFF_SIZE, f);
+            p = strtok(readLink, "\n");
+            if(strcmp(linkServer, p) != 0) {
+                fprintf(f1, "%s\n", p);
+            }
+
+        }
+        rewind(f1);
+        fclose(f);
+        f = fopen(link, "w");
+        while(!feof(f1)) {
+                    fgets(readLink, BUFF_SIZE, f1);
+                    fprintf(f, "%s\n", readLink);
+                }
+        fclose(f1);
+        fclose(f);
+}
+
+//end edit same file at the same time
+
+
 void update(Alist *root){			//update account data
 	FILE *f;
 	char filename[] = "account.txt";
@@ -78,12 +146,21 @@ int checkname(char tmp[255], Alist *root){
 int signup(int newSocket,Alist *root,char tmp[255]){
 	char link[]="SD";
 	char buffer[512];
+	FILE *f;//create file in edit_same_file
+	char fileParh[1024] = "edit_same_file";
 	if (checkname(tmp,root)) {
 		memset(buffer,'\0',(strlen(buffer)+1));
 		sprintf(buffer,"OK");
 		send(newSocket, buffer, BUFF_SIZE, 0);
 		recv(newSocket, buffer, BUFF_SIZE, 0);
 		if (add(root,tmp,buffer)){
+		//create file in edit_same_file with filename = username
+            strcat(fileParh, "/");
+            strcat(fileParh, tmp);
+            strcat(fileParh, ".txt");
+            f = fopen(fileParh,"w");
+            fclose(f);
+        //end process create
 			MakeFolder(link,tmp);
 			memset(tmp,'\0',255);
 			sprintf(tmp,"S");
@@ -335,29 +412,68 @@ char *p;
     strcpy(str, link);
     strcat(str, "/");
     strcat(str, name);
-    f1 = fopen(str,"rb");
-                            if(f1 == NULL) {
-                                printf("Error! Invalid input file\n");
-                                exit(1);
-                            }
-                            while(1) {
-                                fgets(buffer, 1024, f1);
-                                if(feof(f1)) {
-                                    break;
-                                }else {
+    if(checkExitAction(str) == 1) {
+        updateAction(buffer, str);
+        f1 = fopen(str,"rb");
+            if(f1 == NULL) {
+                printf("Error! Invalid input file\n");
+                exit(1);
+            }
+            while(1) {
+                                        fgets(buffer, 1024, f1);
+                                        if(feof(f1)) {
+                                            break;
+                                        }else {
+                                            send(newSocket, buffer, 1024, 0);
+                                            bzero(buffer, sizeof(buffer));
+                                        }
+                                    }
+                                    //deleteAction(str);
+                                    fclose(f1);
+                                    strcpy(buffer, "endfile");
+                                    printf("%s\n", buffer);
                                     send(newSocket, buffer, 1024, 0);
                                     bzero(buffer, sizeof(buffer));
-                                }
-                            }
-                            fclose(f1);
-                            strcpy(buffer, "endfile");
-                            printf("%s\n", buffer);
-                            send(newSocket, buffer, 1024, 0);
-                            bzero(buffer, sizeof(buffer));
+    }else printf("break\n");
+
 }
 //end downfile_server.h
 
-int checkOpCode(int newSocket, char buffer[BUFF_SIZE],char link[BUFF_SIZE]){
+void renameServer(int newSocket, char buffer[1024], char link[BUFF_SIZE])
+{
+printf("43ddddd444\n");
+    char *p;
+        char str[BUFF_SIZE];
+        char name[BUFF_SIZE];
+        char newName[BUFF_SIZE];
+        char sys[BUFF_SIZE];
+        char oldName[BUFF_SIZE] = "";
+        char newNameChange[BUFF_SIZE] = "";
+        strcpy(str, buffer);
+        p = strtok(str,"|");
+        p = strtok(NULL,"|");
+        strcpy(name, p);
+        printf("%s43444\n", name);
+        strcat(oldName, link);
+        strcat(oldName, "/");
+        strcat(oldName, name);
+        printf("%s123\n", oldName);
+        p = strtok(NULL,"|");
+        strcpy(newName, p);
+        strcat(newNameChange, link);
+        strcat(newNameChange, "/");
+        strcat(newNameChange, newName);
+        sprintf(sys,"mv %s %s", oldName, newNameChange);
+        	printf("===%s===\n", sys);
+        	if (!system(sys)) {
+        		bzero(buffer, sizeof(buffer));
+        		sprintf(buffer,"OK");
+        		send(newSocket,buffer,BUFF_SIZE,0);
+        	}
+
+}
+
+int checkOpCode(int newSocket, char buffer[BUFF_SIZE],char link[BUFF_SIZE], char uname[100]){
     char *p;
     char str[BUFF_SIZE];
     strcpy(str, buffer);
@@ -391,6 +507,10 @@ int checkOpCode(int newSocket, char buffer[BUFF_SIZE],char link[BUFF_SIZE]){
     	back(newSocket,buffer,link);
        	return 1;
     }
+    if (!strcmp(p,"rename")){
+        	renameServer(newSocket,buffer, link);
+           	return 1;
+    }
     return 0;
 }
 
@@ -414,7 +534,7 @@ int process(int sockfd, char uname[100]){
 		if (!strcmp(buffer,"Continue")) continue;
 		if (!strcmp(buffer,"out")) break;
 		if (buffer[0]=='\0') break;
-		if(checkOpCode(sockfd, buffer, link) == 0) {
+		if(checkOpCode(sockfd, buffer, link, uname) == 0) {
 			strcpy(buffer, "FUNCTION_NOT_EXIST");
             printf("%s\n", buffer);
             send(sockfd, buffer, BUFF_SIZE, 0);
