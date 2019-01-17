@@ -35,7 +35,7 @@ void hello(char name[255]){
 	printf("\n___________________________\n");
 	printf(" Wellcome %s \n---------------------------\n",name);
 }
-void enter(char uname[100],cur[100]){
+void enter(char uname[100],char cur[100]){
 	printf("\n___________________________\n");
 	printf("Enter the \"help\" for show command list\n");
 	printf("Enter Command %s ~%s:",uname,cur);
@@ -214,29 +214,6 @@ void downFile(int clientSocket, char buffer[1024]){
         }
     fclose(f1);
 }
-char *get1(char cmd[BUFF_SIZE]){
-	char a[30];
-	int i,j=0,k;
-	for (i = 0; i < strlen(cmd); i++) 
-		if (cmd[i] !=' ') break;
-	for (k = i; k < strlen(cmd); k++){
-		if (cmd[k] =='|') break;
-		a[j++]=cmd[k];
-	}
-	a[j]='\0';
-	return &a[0];
-}
-char *get2(char cmd[BUFF_SIZE]){
-	char b[BUFF_SIZE];
-	int j=0,i,k;
-	for (i=0; i < strlen(cmd); i++) 
-		if (cmd[i] =='|') break;
-	for (k = i+1; k < strlen(cmd); k++){
-		b[j++]=cmd[k];
-	}
-	b[j]='\0';
-	return &b[0];
-}
 void conti(int clientSocket){
 	send(clientSocket, "Continue",BUFF_SIZE,0);
 }
@@ -293,7 +270,7 @@ int back(int clientSocket,char c1[10],char c2[BUFF_SIZE]){
 	}
 
 int process(int clientSocket, char uname[100]){
-	char cmd[BUFF_SIZE];
+	char cmd[BUFF_SIZE],temp[BUFF_SIZE];
 	char *c1,*c2;
 	hello(uname);
 	while(1){
@@ -305,8 +282,10 @@ int process(int clientSocket, char uname[100]){
 		fflush(stdin);
 		memset(cmd,'\0',(strlen(cmd)+1));
 		gets(cmd);
-		c1 = get1(cmd);
-		c2 = get2(cmd);
+		strcpy(temp,cmd);
+		c1 = strtok(temp,"|");
+		c2 = strtok(NULL,"\0");
+		printf("cmd:%s\n", cmd);
 		if (!strcmp(c1,"out")) {
 			send(clientSocket,c1,BUFF_SIZE,0);
 			break;
