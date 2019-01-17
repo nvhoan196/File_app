@@ -321,13 +321,50 @@ void ls(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	}
 }
 
+//downfile_server.h
+void downFile(int newSocket, char buffer[1024], char link[BUFF_SIZE])
+{
+FILE *f1;
+char *p;
+    char str[BUFF_SIZE];
+    char name[BUFF_SIZE];
+    strcpy(str, buffer);
+    p = strtok(str,"|");
+    p = strtok(NULL,"|");
+    strcpy(name, p);
+    strcpy(str, link);
+    strcat(str, "/");
+    strcat(str, name);
+    f1 = fopen(str,"rb");
+                            if(f1 == NULL) {
+                                printf("Error! Invalid input file\n");
+                                exit(1);
+                            }
+                            while(1) {
+                                fgets(buffer, 1024, f1);
+                                if(feof(f1)) {
+                                    break;
+                                }else {
+                                    send(newSocket, buffer, 1024, 0);
+                                    bzero(buffer, sizeof(buffer));
+                                }
+                            }
+                            fclose(f1);
+                            strcpy(buffer, "endfile");
+                            printf("%s\n", buffer);
+                            send(newSocket, buffer, 1024, 0);
+                            bzero(buffer, sizeof(buffer));
+}
+//end downfile_server.h
+
 int checkOpCode(int newSocket, char buffer[BUFF_SIZE],char link[BUFF_SIZE]){
     char *p;
     char str[BUFF_SIZE];
     strcpy(str, buffer);
     p = strtok(str,"|");
+    printf("%s\n", p);
     if(strcmp(p, "downfile")==0){
-    	//downfile(newSocket, buffer); //downfile server
+    	downFile(newSocket, buffer, link); //downfile server
     	return 1;
     }
     if (!strcmp(p,"upfile")){
