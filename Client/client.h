@@ -129,8 +129,8 @@ void signin(int clientSocket){
 }
 
 int upfile(int clientSocket, char *c1,char *c2){
-	char tmp[BUFF_SIZE];
-	char fname[255];
+	char *tmp = malloc(sizeof(char)*1024);
+	char *fname = malloc(sizeof(char)*255);
 	pthread_t tid;
 	size_t clen=0;
 	int connfd = 0,err,j=0;
@@ -178,7 +178,8 @@ int upfile(int clientSocket, char *c1,char *c2){
 	fclose(fp);
 	return 1;
 }
-void downFile(int clientSocket, char buffer[1024]) {
+
+void downFile(int clientSocket, char buffer[1024]){
 	FILE *f1;
 	char *p;
 	char str[1024];
@@ -211,9 +212,8 @@ void downFile(int clientSocket, char buffer[1024]) {
         		fprintf(f1,"%s",buffer);
         	}
         }
-        fclose(f1);
-    }
-
+    fclose(f1);
+}
 char *get1(char cmd[BUFF_SIZE]){
 	char a[30];
 	int i,j=0,k;

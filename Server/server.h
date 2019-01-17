@@ -190,9 +190,9 @@ int upfile(int sockfd,char buffer[BUFF_SIZE],char link[BUFF_SIZE]){
 	fclose(fp);
 	return 1;
 }
-
-void downFile(int newSocket, char buffer[1024], char link[BUFF_SIZE]) {
-	FILE *f1; 
+void downFile(int newSocket, char buffer[1024], char link[BUFF_SIZE])
+{
+	FILE *f1;
 	char *p;
 	char str[BUFF_SIZE];
 	char name[BUFF_SIZE];
@@ -223,7 +223,6 @@ void downFile(int newSocket, char buffer[1024], char link[BUFF_SIZE]) {
 	send(newSocket, buffer, 1024, 0);
 	bzero(buffer, sizeof(buffer));
 }
-
 int remo(int sockfd,char buffer[BUFF_SIZE], char link[BUFF_SIZE]){
 	char linkf[BUFF_SIZE];
 	char sys[BUFF_SIZE];
