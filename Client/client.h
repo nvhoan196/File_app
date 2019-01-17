@@ -178,7 +178,43 @@ int upfile(int clientSocket, char *c1,char *c2){
 	fclose(fp);
 	return 1;
 }
-char *get1(char cmd[500]){
+void downFile(int clientSocket, char buffer[1024]) {
+	FILE *f1;
+	char *p;
+	char str[1024];
+	char *fileName = (char *)malloc(255);
+	send(clientSocket, buffer, BUFF_SIZE, 0);
+	printf("%s\n", buffer);
+	strcpy(str, buffer);
+    //example : DOWNFILE|test.txt|/Users/mavuong/Desktop|
+	p = strtok(str, "|");
+	p = strtok(NULL, "|");
+	strcpy(fileName, p);
+        p = strtok(NULL, "|");//file path
+        strcat(p, "/");
+        strcat(p, fileName);
+        printf("%s\n", p);
+        f1 = fopen(p,"wb");
+        if(f1 == NULL) {
+        	printf("Error! Invalid input file\n");
+        	exit(1);
+        }
+        while(1) {
+        	if(recv(clientSocket, buffer, 1024, 0) < 0){
+        		printf("[-]Error in receiving data.\n");
+        		break;
+        	}else{
+        		if(strcmp(buffer, "endfile") == 0){
+        			printf("****File download success!****\n");
+        			break;
+        		}
+        		fprintf(f1,"%s",buffer);
+        	}
+        }
+        fclose(f1);
+    }
+
+char *get1(char cmd[BUFF_SIZE]){
 	char a[30];
 	int i,j=0,k;
 	for (i = 0; i < strlen(cmd); i++) 
@@ -190,8 +226,8 @@ char *get1(char cmd[500]){
 	a[j]='\0';
 	return &a[0];
 }
-char *get2(char cmd[500]){
-	char b[500];
+char *get2(char cmd[BUFF_SIZE]){
+	char b[BUFF_SIZE];
 	int j=0,i,k;
 	for (i=0; i < strlen(cmd); i++) 
 		if (cmd[i] =='|') break;
@@ -296,7 +332,7 @@ int process(int clientSocket, char uname[100]){
 			continue;
 		}
 		if (!strcmp(c1,"downfile")){
-		//downfile(clientSocket,c1,c2);
+			downFile(clientSocket,cmd);
 			continue;
 		}
 		if (!strcmp(c1,"ls")){
